@@ -277,10 +277,11 @@ type. The following parameters are supported:
            (compile
             nil
             `(lambda (p)
-               ,,@(loop with stride = `(foreign-type-size ',name)
+               ,,@(loop with stride = `(foreign-type-size '(:struct ,name))
                         for c in clauses
                         for offset = `(foreign-slot-offset
-                                       ',name ',(caadr (member :components c)))
+                                       '(:struct ,name)
+                                       ',(caadr (member :components c)))
                         collect `(emit-gl-array-bind-clause
                                   ',c ,offset ,stride 'p)))))
      ',name))
@@ -327,6 +328,7 @@ outside WITH-GL-ARRAY."
   "Returns the INDEX-th component of ARRAY. If COMPONENT is
 supplied and ARRAY is of a compound type the component named
 COMPONENT is returned."
+  (format t "array-type: ~a~%" (gl-array-type array))
   (if c-p
       (foreign-slot-value (mem-aref (gl-array-pointer array)
                                     (gl-array-type array)
