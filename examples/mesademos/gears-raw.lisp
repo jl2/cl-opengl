@@ -13,10 +13,10 @@
 
 ;(declaim (optimize (speed 3) (safety 0) (compilation-speed 0) (debug 0)))
 
-(defconstant +pif+ (coerce pi 'single-float))
+(defconstant +pif+ (coerce pi 'double-float))
 
 (defun gear (inner-radius outer-radius width n-teeth tooth-depth)
-  (declare (single-float inner-radius outer-radius width tooth-depth)
+  (declare (double-float inner-radius outer-radius width tooth-depth)
            (fixnum n-teeth))
   (let ((r0 inner-radius)
         (r1 (- outer-radius (/ tooth-depth 2.0)))
@@ -117,7 +117,7 @@
           (gl:vertex (* r0 (cos angle)) (* r0 (sin angle)) (* (- width) 0.5))
           (gl:vertex (* r0 (cos angle)) (* r0 (sin angle)) (* width 0.5)))))))
 
-(declaim (single-float *view-rotx* *view-roty* *view-rotz* *angle*)
+(declaim (double-float *view-rotx* *view-roty* *view-rotz* *angle*)
          (fixnum *gear1* *gear2* *gear3* *limit* *count* *t0*))
 (defvar *view-rotx* 20.0)
 (defvar *view-roty* 30.0)
