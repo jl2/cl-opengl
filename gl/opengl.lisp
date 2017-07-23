@@ -112,19 +112,23 @@
   "Pointer to C array with size and type information attached."
   (pointer (null-pointer))
   (size 0 :type unsigned-byte)
-  (type nil :type symbol))
+  (type nil))
 
 (defstruct (gl-vertex-array (:copier nil) (:include gl-array))
   "Like GL-ARRAY, but with an aditional vertex array binder."
   (binder #'identity :type function))
 
 (defun alloc-gl-array (type count)
-  (if (get type 'vertex-array-binder)
+  (let ((tname (typecase type
+                 (cons (progn (format t "~a~%" type)
+                              (cadr type)))
+                 (t type))))
+  (if (get tname 'vertex-array-binder)
       (make-gl-vertex-array
        :pointer (foreign-alloc type :count count)
-       :size count :type type :binder (get type 'vertex-array-binder))
+       :size count :type type :binder (get tname 'vertex-array-binder))
       (make-gl-array :pointer (foreign-alloc type :count count)
-                     :size count :type type)))
+                     :size count :type type))))
 
 (declaim (inline make-gl-array-from-pointer))
 (defun make-gl-array-from-pointer (ptr type count)
@@ -328,10 +332,9 @@ outside WITH-GL-ARRAY."
   "Returns the INDEX-th component of ARRAY. If COMPONENT is
 supplied and ARRAY is of a compound type the component named
 COMPONENT is returned."
-  (format t "array-type: ~a~%" (gl-array-type array))
   (if c-p
       (foreign-slot-value (mem-aref (gl-array-pointer array)
-                                    (gl-array-type array)
+                                    (list :pointer (gl-array-type array))
                                     index)
                           (gl-array-type array)
                           component)
@@ -342,9 +345,9 @@ COMPONENT is returned."
   "Sets the place (GLAREF ARRAY INDEX [COMPONENT]) to VALUE."
   (if c-p
       (setf (foreign-slot-value (mem-aref (gl-array-pointer array)
-                                          (gl-array-type array)
+                                          (list :pointer (gl-array-type array))
                                           index)
-                                (gl-array-type array)
+                                (cdr (gl-array-type array))
                                 component)
             value)
       (setf (mem-aref (gl-array-pointer array) (gl-array-type array) index)
